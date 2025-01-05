@@ -1,0 +1,63 @@
+version: "3"
+
+services:
+    app:
+        build: .
+        image: laraveldocker
+        container_name: laraveldocker
+        restart: unless-stopped
+        tty: true
+        environment:
+            SERVICE_NAME: app
+        working_dir: /var/www/laraveldocker
+        volumes:
+            - .:/var/www/laraveldocker:rw
+            - ./storage/php.ini:/usr/local/etc/php/conf.d/local.ini:rw
+        networks:
+            - laraveldocker
+    webserver:
+        image: nginx:alpine
+        container_name: nginxlaraveldocker
+        restart: unless-stopped
+        tty: true
+        ports:
+            - 2022:80
+        volumes:
+            - .:/var/www/laraveldocker:rw
+            - ./storage/:/etc/nginx/conf.d
+        networks:
+            - laraveldocker
+    db:
+        image: mysql:5.7
+        container_name: dblaraveldocker
+        restart: always
+        tty: true
+        ports:
+            - 20222:3306
+        environment:
+            MYSQL_PASSWORD: laraveldocker
+            MYSQL_ROOT_PASSWORD: laraveldocker
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - ldata:/var/lib/mysql
+        networks:
+            - laraveldocker
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: pmalaraveldocker
+        links:
+            - db
+        restart: always
+        ports:
+            - 7000:80
+        networks:
+            - laraveldocker
+networks:
+    laraveldocker:
+        driver: bridge
+volumes:
+    lbdata:
+        driver: local
+    ldata: # tambahkan deklarasi volume ldata
+        driver: local
